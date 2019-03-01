@@ -16,6 +16,9 @@ class Importer
     /** @var $array */
     protected $requiredFields;
 
+    /** @var string  */
+    protected $delimeter = ',';
+
     /**
      * Importer constructor.
      * @param Csv $csv
@@ -62,6 +65,25 @@ class Importer
     {
         /** Todo (має робити даже якшо в наследніка не переопреділені реквайред поля) */
         return count(array_diff($this->data[0], $this->requiredFields)) == 0;
+    }
+
+    /**
+     * Validate File
+     * @todo дописати визов і зробити так щоб пропускав биті рядки
+     *
+     * @return bool
+     */
+    private function validateFile()
+    {
+        $headCount = count(explode($this->delimeter, $this->data[0]));
+        foreach ($this->data as $row) {
+            if(count(explode($this->delimeter)) !== $headCount) {
+                return false;
+            }
+        }
+
+        return true;
+
     }
 
 

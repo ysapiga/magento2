@@ -83,7 +83,7 @@ class CategoryImporter extends Importer
                 }
                 try {
                     $categoryCollection = $this->getCategoryCollectionByName($this->prepareData($row)['name']);
-                    if ($categoryCollection->getItems() > 0) {
+                    if (count($categoryCollection->getItems()) > 0) {
                         foreach ($categoryCollection as $category) {
                             $this->categoryRepository->delete($category);
                             if ($removeProducts) {

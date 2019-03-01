@@ -1,7 +1,6 @@
 <script>
 require(['jquery', 'jquery/ui'], function($) {
     $('#runImport').on('click', function () {
-        var postUrl = choseAction();
         var file = document.querySelector('#import_file').files[0];
 
         if(file) {
@@ -63,7 +62,8 @@ require(['jquery', 'jquery/ui'], function($) {
         $('body').trigger('processStart');
         importStrategy = $('#import_strategy').val();
         catProdStrategy = $('#products_strategy').val();
-        dataForSent = {fileString: data, form_key: FORM_KEY, products_strategy: catProdStrategy, importStrategy: importStrategy};
+        dataForSent = {fileString: data, form_key: FORM_KEY, products_strategy: catProdStrategy, import_strategy: importStrategy};
+        var postUrl = choseAction();
         if (choseAction()) {
             $.post(postUrl, dataForSent
             ).done(function (data) {

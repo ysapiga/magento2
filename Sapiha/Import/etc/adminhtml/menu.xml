@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Sapiha_Import::import" title="Custom Import" translate="title" module="Sapiha_Import" sortOrder="20" resource="Sapiha_Import::import"/>
+        <add id="Sapiha_Import::product_import" title="Product Import" translate="title" module="Sapiha_Import" parent="Sapiha_Import::import" action="custom_import/product" sortOrder="21" resource="Sapiha_Import::product_import"/>
+        <add id="Sapiha_Import::category_import" title="Category Import" translate="title" module="Sapiha_Import" parent="Sapiha_Import::import" action="custom_import/category" sortOrder="22" resource="Sapiha_Import::category_import"/>
+    </menu>
+</config>

@@ -1,0 +1,81 @@
+<script>
+require(['jquery', 'jquery/ui'], function($) {
+    $('#runImport').on('click', function () {
+        var postUrl = choseAction();
+        var file = document.querySelector('#import_file').files[0];
+
+        if(file) {
+            getBase64(file).then(
+                data => run(data)
+            );
+        } else {
+            alert('You have yo chose a file');
+        }
+    });
+
+    $("#import_strategy").ready(function () {
+        var prodBlock = $('.field-products_strategy');
+        if (prodBlock) {
+            prodBlock.hide();
+            var input = $('#import_strategy');
+            input.on('change', function () {
+                if(input.val() == 1) {
+                    prodBlock.show();
+                } else {
+                    prodBlock.hide();
+                }
+            })
+        }
+
+    });
+
+    function getBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
+
+    function setMessage(data) {
+        if (data['success']) {
+            m = 'Import succesfully done';
+        } else {
+            m = 'Something Went wrong';
+        }
+
+        return m;
+    }
+
+    function choseAction() {
+        if ($('#import_type').val() == 'product') {
+            url = '<?php echo $block->getProductActionUrl()?>';
+        } else if ($('#import_type').val() == 'category') {
+            url = '<?php echo $block->getCategoryActionUrl()?>';
+        } else {
+            return false;
+        }
+        return url;
+    }
+
+    function run(data) {
+        $('body').trigger('processStart');
+        importStrategy = $('#import_strategy').val();
+        catProdStrategy = $('#products_strategy').val();
+        dataForSent = {fileString: data, form_key: FORM_KEY, products_strategy: catProdStrategy, importStrategy: importStrategy};
+        if (choseAction()) {
+            $.post(postUrl, dataForSent
+            ).done(function (data) {
+                $('body').trigger('processStop');
+                alert(setMessage(data))
+            }).fail(function (data) {
+                alert(setMessage(data));
+                $('body').trigger('processStop');
+            })
+        } else {
+            alert('Cannot run import');
+        }
+    }
+});
+</script>

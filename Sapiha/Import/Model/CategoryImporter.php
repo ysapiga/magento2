@@ -9,6 +9,7 @@ use Magento\Catalog\Model\CategoryRepository;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
 
 class CategoryImporter extends Importer
 {
@@ -32,17 +33,20 @@ class CategoryImporter extends Importer
         CategoryRepository $categoryRepository,
         ProductRepositoryInterface $productRepository,
         CollectionFactory $categoryCollectionFactory,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        LoggerInterface $logger,
+        string $delimeter = ','
 
     )
     {
-        parent::__construct($csv, $filePAth);
+        parent::__construct($csv, $filePAth, $delimeter);
 
         $this->categoryFactory = $categoryFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->categoryRepository = $categoryRepository;
         $this->productRepository = $productRepository;
         $this->storeManager = $storeManager;
+        $this->logger = $logger;
     }
 
     /**
@@ -112,8 +116,7 @@ class CategoryImporter extends Importer
                 try {
                     $this->productRepository->delete($product);
                 } catch (\Exception $e) {
-                    /** ToDo log an Exception */
-                    $e->getMessage();
+                   $this->logger->warning($e->getMessage());
                 }
             }
         }

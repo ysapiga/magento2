@@ -5,6 +5,7 @@ namespace Sapiha\Import\Controller\Adminhtml\Product;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
+use Sapiha\Import\Model\Decoder;
 use Sapiha\Import\Model\DecoderFactory;
 use Sapiha\Import\Model\ProductImporterFactory;
 
@@ -38,14 +39,14 @@ class Import extends Action
     {
         $result = $this->resultJsonFactory->create();
         $fileString = $this->getRequest()->getParam('fileString');
+        $delimeter = $this->getRequest()->getParam('import_field_separator');
 
         if ($fileString) {
-            $fileDecoder = $this->decoderFactory->create(['fileString' => $fileString ]);
+            $fileDecoder = $this->decoderFactory->create(['fileString' => $fileString]);
+            $filePAth = Decoder::getFilePath();
             /** @var $prodImporter */
-            $prodImporter = $this->productImporterFactory->create();
-//            $this->getRequest()->getParam('import_strategy')
-//                ? $prodImporter->createProducts()
-//                : $prodImporter->deleteProducts();
+            $prodImporter = $this->productImporterFactory->create(['delimeter' => $delimeter, 'filePath' => $filePAth]);
+            $prodImporter->readFile();
             $prodImporter->createProducts();
 
             $fileDecoder->deleteFile();

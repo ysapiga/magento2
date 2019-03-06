@@ -62,7 +62,11 @@ require(['jquery', 'jquery/ui'], function($) {
         $('body').trigger('processStart');
         importStrategy = $('#import_strategy').val();
         catProdStrategy = $('#products_strategy').val();
-        dataForSent = {fileString: data, form_key: FORM_KEY, products_strategy: catProdStrategy, import_strategy: importStrategy};
+        importFieldSeparator = $('#_import_field_separator').val();
+        dataForSent = {fileString: data, form_key: FORM_KEY,
+            products_strategy: catProdStrategy,
+            import_strategy: importStrategy,
+            import_field_separator: importFieldSeparator};
         var postUrl = choseAction();
         if (choseAction()) {
             $.post(postUrl, dataForSent

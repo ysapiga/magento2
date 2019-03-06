@@ -5,12 +5,8 @@ namespace Sapiha\Import\Model;
 
 class Decoder
 {
-    /** Todo (файл має мати унікальне значееня) */
-    const TMP_IMPORT_DIR = 'var/custom_import/';
 
-    const TMP_FILE_NAME = 'custom_import.csv';
-
-    const TMP_IMPORT_PATH = 'var/custom_import/custom_import.csv';
+    const TMP_IMPORT_PATH = 'var/custom_import/';
 
     /** @var string  */
     private $fileString;
@@ -18,13 +14,20 @@ class Decoder
     /** @var bool  */
     private $success;
 
+    /** @var string  */
+    protected $delimeter = ',';
+
+    /** @var string */
+    public static $fileName;
+
     /**
      * Decoder constructor.
      * @param string $fileString
      */
-    public function __construct(string $fileString)
+    public function __construct(string $fileString, string $delimeter = ',')
     {
         $this->fileString = $fileString;
+        $this->delimeter = $delimeter;
         $this->success = $this->saveFile();
     }
 
@@ -38,7 +41,7 @@ class Decoder
         $result = false;
 
         if(is_string($this->fileString)) {
-            $data = explode(',', $this->fileString);
+            $data = explode($this->delimeter, $this->fileString);
             $result = base64_decode($data[1]);
         }
 
@@ -57,8 +60,8 @@ class Decoder
         $content = $this->decode();
         if ($content) {
             $this->createTmpDirectory();
-            file_put_contents(self::TMP_IMPORT_PATH, $content);
-            $this->success = true;
+            self::$fileName = time() . '.csv';
+            file_put_contents(self::TMP_IMPORT_PATH .  self::$fileName, $content);
             $result = true;
         }
 
@@ -72,21 +75,20 @@ class Decoder
      */
     private function createTmpDirectory()
     {
-        if (!is_dir(self::TMP_IMPORT_DIR)) {
-            mkdir(self::TMP_IMPORT_DIR);
+        if (!is_dir(self::TMP_IMPORT_PATH)) {
+            mkdir(self::TMP_IMPORT_PATH);
         }
     }
 
     /**
      * Remove tmp file
-     * ToDo (файл має мати унікальне значення)
      *
      * @return void
      */
     public static function deleteFile()
     {
-        if (file_exists(self::TMP_IMPORT_PATH)) {
-            unlink(self::TMP_IMPORT_PATH);
+        if (file_exists(self::TMP_IMPORT_PATH .  self::$fileName)) {
+            unlink(self::TMP_IMPORT_PATH .  self::$fileName );
         }
     }
 
@@ -98,5 +100,15 @@ class Decoder
     public function getSuccess()
     {
         return $this->success;
+    }
+
+    /**
+     * Get filePath
+     *
+     * @return string
+     */
+    public static function getFilePath()
+    {
+        return self::TMP_IMPORT_PATH . self::$fileName;
     }
 }

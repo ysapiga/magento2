@@ -8,6 +8,11 @@ use Magento\Framework\View\Result\PageFactory;
 
 class Index extends Action
 {
+    /**
+     * Index constructor.
+     * @param Context $context
+     * @param PageFactory $resultPageFactory
+     */
     public function __construct(
         Context $context,
         PageFactory $resultPageFactory
@@ -18,6 +23,9 @@ class Index extends Action
         parent::__construct($context);
     }
 
+    /**
+     * @inheritdoc
+     */
     public function execute()
     {
         $resultPage = $this->resultPageFactory->create();
@@ -25,13 +33,13 @@ class Index extends Action
         return $resultPage;
     }
 
-//    /**
-//     * Check Permission.
-//     *
-//     * @return bool
-//     */
-//    protected function _isAllowed()
-//    {
-//        return $this->_authorization->isAllowed('Sapiha_Import::manage_import');
-//    }
+    /**
+     * Check Permission.
+     *
+     * @return bool
+     */
+    protected function _isAllowed()
+    {
+        return $this->_authorization->isAllowed('Sapiha_Import::manage_import');
+    }
 }

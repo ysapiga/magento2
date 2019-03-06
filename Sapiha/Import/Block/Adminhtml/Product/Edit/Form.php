@@ -60,6 +60,17 @@ class Form extends Generic
             ]
         );
         $fieldset->addField(
+            Import::FIELD_FIELD_SEPARATOR,
+            'text',
+            [
+                'name' => Import::FIELD_FIELD_SEPARATOR,
+                'label' => __('Field separator'),
+                'title' => __('Field separator'),
+                'required' => true,
+                'value' => ',',
+            ]
+        );
+        $fieldset->addField(
             Import::FIELD_NAME_SOURCE_FILE,
             'file',
             [

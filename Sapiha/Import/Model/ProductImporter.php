@@ -7,6 +7,8 @@ use Magento\Catalog\Api\Data\ProductInterfaceFactory;
 use Magento\Catalog\Api\ProductRepositoryInterface;
 use Magento\CatalogInventory\Api\StockRegistryInterface;
 use Magento\Catalog\Model\Product\Type;
+use Psr\Log\LoggerInterface;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory;
 
 class ProductImporter extends Importer
 {
@@ -16,6 +18,9 @@ class ProductImporter extends Importer
     /** @var array  */
     protected $requiredFields = ['sku', 'name', 'price'];
 
+    /** @var LoggerInterface */
+    protected $logger;
+
     /**
      * ProductImporter constructor.
      * @param Csv $csv
@@ -23,20 +28,26 @@ class ProductImporter extends Importer
      * @param ProductInterfaceFactory $productFactory
      * @param ProductRepositoryInterface $productRepository
      * @param StockRegistryInterface $stockRegistry
+     * @param LoggerInterface $logger
+     * @param string $delimeter
      */
     public function __construct(
         Csv $csv,
-        string $filePAth = Decoder::TMP_IMPORT_PATH,
+        string $filePath,
         ProductInterfaceFactory $productFactory,
         ProductRepositoryInterface $productRepository,
-        StockRegistryInterface $stockRegistry
+        StockRegistryInterface $stockRegistry,
+        LoggerInterface $logger,
+        string $delimeter = ',',
+        CollectionFactory $categoryCollectionFactory
     )
     {
-        parent::__construct($csv, $filePAth);
+        parent::__construct($csv, $filePath, $logger,  $delimeter);
 
         $this->productFactory = $productFactory;
         $this->productRepository = $productRepository;
         $this->stockRegistry = $stockRegistry;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
     }
 
     /**
@@ -51,18 +62,32 @@ class ProductImporter extends Importer
                if ($rowNumb == 0) {
                    continue;
                }
-
                $product = $this->productFactory->create();
-               $product->setData($this->prepareData($row));
-               $product->setTypeId(Type::TYPE_SIMPLE);
-               $product->setAttributeSetId(self::DEFAULT_ATTRIBUTE_SET_ID);
-               try {
-                   $this->productRepository->save($product);
-               } catch (\Exception $e) {
-                   Decoder::deleteFile();
+               if (!$product->getIdBySku($row[0])) {
+                   $product->setData($this->prepareData($row));
+                   $product->setTypeId(Type::TYPE_SIMPLE);
+                   $product->setAttributeSetId(self::DEFAULT_ATTRIBUTE_SET_ID);
+                   $product->setCategoryIds($this->getCategoryIdsByName($row[3]));
+                   try {
+                       $this->productRepository->save($product);
+                   } catch (\Exception $e) {
+                       Decoder::deleteFile();
+                   }
                }
+
+
            }
         }
+    }
+
+    /**
+     * Update product stock
+     *
+     * @param $row
+     */
+    private function updateStock($row)
+    {
+
     }
 
     /**
@@ -103,5 +128,23 @@ class ProductImporter extends Importer
         }
 
         return $data;
+    }
+
+    /**
+     * Get Category ids by name
+     *
+     * @param string $name
+     * @return $array
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    private function getCategoryIdsByName($name)
+    {
+        $categoryIds = [];
+        $collection = $this->categoryCollectionFactory->create()->addAttributeToFilter('name', $name);
+        foreach ($collection as $item) {
+            $categoryIds[] = $item->getId();
+        }
+
+        return $categoryIds;
     }
 }

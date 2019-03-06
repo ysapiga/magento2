@@ -3,6 +3,7 @@
 namespace Sapiha\Import\Model;
 
 use Magento\Framework\File\Csv;
+use Psr\Log\LoggerInterface;
 
 class Importer
 {
@@ -19,6 +20,7 @@ class Importer
     /** @var string  */
     protected $delimeter = ',';
 
+
     /**
      * Importer constructor.
      * @param Csv $csv
@@ -26,11 +28,25 @@ class Importer
      */
     public function __construct(
         Csv $csv,
-        string $filePAth = Decoder::TMP_IMPORT_PATH
+        string $filePath,
+        LoggerInterface $logger,
+        string $delimeter = ','
     )
     {
         $this->csv = $csv;
-        $this->filePAth = $filePAth;
+        $this->filePAth = $filePath;
+        $this->logger = $logger;
+        $this->delimeter = $delimeter;
+    }
+
+    /**
+     * Read file data
+     *
+     * @throws \Exception
+     * @return void
+     */
+    public function readFile()
+    {
         $this->data = $this->getDataFromFile();
     }
 
@@ -52,7 +68,7 @@ class Importer
      */
     private function getDataFromFile()
     {
-        return $this->csv->getData($this->filePAth);
+        return $this->validateData($this->csv->getData($this->filePAth));
     }
 
 
@@ -63,27 +79,32 @@ class Importer
      */
     protected function validateFields()
     {
-        /** Todo (має робити даже якшо в наследніка не переопреділені реквайред поля) */
-        return count(array_diff($this->data[0], $this->requiredFields)) == 0;
+        return $this->requiredFields
+            ? array_intersect($this->getData()[0], $this->requiredFields) == $this->requiredFields
+            : true;
     }
 
     /**
      * Validate File
-     * @todo дописати визов і зробити так щоб пропускав биті рядки
      *
-     * @return bool
+     * @param array $data
+     * @return array
      */
-    private function validateFile()
+    private function validateData(array $data)
     {
-        $headCount = count(explode($this->delimeter, $this->data[0]));
-        foreach ($this->data as $row) {
-            if(count(explode($this->delimeter)) !== $headCount) {
-                return false;
+        $headCount = count($data[0]);
+        $validData = [];
+        foreach ($data as $rowNumb => $row) {
+            if(count($row) !== $headCount) {
+                $this->logger->notice("The row number $rowNumb skipped because of not valid data");
+                continue;
             }
+
+
+            $validData[] = $row;
         }
 
-        return true;
-
+        return $validData;
     }
 
 
